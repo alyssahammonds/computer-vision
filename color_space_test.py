@@ -2,7 +2,7 @@
 
 # Assignment 1: Color Spaces and Data Augmentation
 import numpy as np
-
+import cv2 as cv
 
 # Color Spaces - RGB to HSV
 # Create a function that converts an RGB image represented as a numpy array into HSV format.
@@ -60,22 +60,35 @@ def hsv2rbg(img, H, S, V):
 # testing - accepts a filename, hue modifier, saturation modifier, and value modifier
 
 if __name__ == "__main__":
-    # ask for the filename
+    # ask for image filename    
     filename = input("Enter the filename: ")
-    # load the image
-    img = np.load(filename)
+    img = cv.imread(filename)
+    img_array = np.array(img)
+
     # ask for the modifiers
     h = int(input("Enter the hue modifier: "))
-    s = int(input("Enter the saturation modifier: "))
+    if h < 0 or h > 360:
+        print("Invalid input")
+        exit()
+    s = float(input("Enter the saturation modifier: "))
+    if s < 0 or s > 1:
+        print("Invalid input")
+        exit()
     v = int(input("Enter the value modifier: "))
+
+    
+
     # convert the image to HSV
-    H, S, V = rgb2hsv(img)
+    H, S, V = rgb2hsv(img, r, g, b)
+
     # modify the HSV values
     H += h
     S += s
     V += v
+
     # convert the image back to RGB
     R, G, B = hsv2rbg(H, S, V)
+
     # save the image
     np.save(filename, np.dstack((R, G, B)))
     print("Image saved as", filename)
