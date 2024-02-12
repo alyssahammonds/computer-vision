@@ -1,12 +1,13 @@
 # Alyssa Hammonds
 
 # Assignment 1: Color Spaces and Data Augmentation
+import sys
 import numpy as np
 import cv2 as cv
 
-# Color Spaces - RGB to HSV
-# Create a function that converts an RGB image represented as a numpy array into HSV format.
-def rgb2hsv(img, R, G, B):
+def rgb2hsv(img, r, g, b):
+    # Normalize RGB values to be in range of [0,1]    
+
     # V = max(R, G, B)
     V = np.max(img, axis=2)
 
@@ -19,19 +20,18 @@ def rgb2hsv(img, R, G, B):
     else:
         S = C / V
 
-    # piecewise function to calculate H
-    if (C == 0):
-        H = 0
-    elif (V == R):
-        H = 60 * ((G - B) / C)
-    elif (V == G):
-        H = 60 * (2 + (B - R) / C)
-    elif (V == B):
-        H = 60 * (4 + (R - G) / C)
+    # getting run-time errors
+    H = np.zeros_like(V)
+    non_zero_C = C != 0
+    H = np.where(non_zero_C & (V == r), 60 * (g - b) / C, H)
+    H = np.where(non_zero_C & (V == g), 60 * (b - r) / C + 120, H)
+    H = np.where(non_zero_C & (V == b), 60 * (r - g) / C + 240, H)
+  
 
     return H, S, V
 
-def hsv2rbg(img, H, S, V):
+def hsv2rbg(H, S, V):
+    H = np.where(h >= 360, h-360, h)
     C = V * S
     # We then divide up the Hue into one of 6 values:
     H = H / 60
@@ -76,7 +76,9 @@ if __name__ == "__main__":
         exit()
     v = int(input("Enter the value modifier: "))
 
-    
+    #normalize rgb values
+    img = img_array / 255
+    r, g, b = img[:,:,0], img[:,:,1], img[:,:,2]
 
     # convert the image to HSV
     H, S, V = rgb2hsv(img, r, g, b)
@@ -89,9 +91,13 @@ if __name__ == "__main__":
     # convert the image back to RGB
     R, G, B = hsv2rbg(H, S, V)
 
-    # save the image
-    np.save(filename, np.dstack((R, G, B)))
-    print("Image saved as", filename)
+    # save the image as jpg
+    img = np.dstack((R, G, B))
+    img = img * 255
+    img = img.astype(np.uint8)
+    cv.imwrite("modified_image.jpg", img)
+    
+    print("Image saved as", "modified_image.jpg")
     
 
 
